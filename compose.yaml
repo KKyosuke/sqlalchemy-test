@@ -1,4 +1,15 @@
 services:
+  app:
+    build:
+      context: ./app
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: mysql://user:password@db:3306/test_db
+    tty: true
+
   db:
     image: mysql:8.0
     restart: always
