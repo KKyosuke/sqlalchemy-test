@@ -1,32 +1,59 @@
-from sqlalchemy import create_engine, Column, Integer, String, TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import datetime
-
-# Database connection URL
-# Use 'db' as the host as specified in compose.yaml
-DATABASE_URL = "mysql://user:password@db:3306/test_db"
-
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    company_id = Column(Integer, nullable=False)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
+from app.database import SessionLocal, Base
+from app.model import User, Task
 
 def main():
     db = SessionLocal()
     try:
+        # --- 既存のユーザー情報を表示 ---
+        print("--- Existing Users ---")
         users = db.query(User).all()
-        print(f"Total users: {len(users)}")
         for user in users:
             print(f"ID: {user.id}, Name: {user.name}, Email: {user.email}")
+
+        # --- Create (Insert) ---
+        # 新しいタスクを作成してデータベースに保存します
+        print("\n--- Creating a new task ---")
+        new_task = Task(todo="Sample Task", company_id=1)
+        db.add(new_task)
+        db.commit()
+        db.refresh(new_task) # 生成されたIDなどを取得するためにリフレッシュ
+        print(f"Created Task ID: {new_task.id}, Todo: {new_task.todo}")
+
+        # --- Read (Select) ---
+        # すべてのタスクを取得して表示します
+        tasks = db.query(Task).all()
+        print(f"\nTotal tasks: {len(tasks)}")
+        for task in tasks:
+            print(f"ID: {task.id}, Todo: {task.todo}, Company ID: {task.company_id}")
+
+        # --- Update ---
+        # 先ほど作成したタスクの内容を更新します
+        print(f"\n--- Updating task ID: {new_task.id} ---")
+        task_to_update = db.query(Task).filter(Task.id == new_task.id).first()
+        if task_to_update:
+            task_to_update.todo = "Updated Sample Task"
+            db.commit()
+            db.refresh(task_to_update)
+            print(f"Updated Task ID: {task_to_update.id}, Todo: {task_to_update.todo}")
+
+        # --- Delete ---
+        # 更新したタスクを削除します
+        print(f"\n--- Deleting task ID: {new_task.id} ---")
+        task_to_delete = db.query(Task).filter(Task.id == new_task.id).first()
+        if task_to_delete:
+            db.delete(task_to_delete)
+            db.commit()
+            print(f"Deleted Task ID: {new_task.id}")
+
+        # --- Final Read ---
+        # 削除後のタスク一覧を確認します
+        final_tasks = db.query(Task).all()
+        print(f"\nTotal tasks after deletion: {len(final_tasks)}")
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        db.rollback()
     finally:
         db.close()
 
