@@ -33,6 +33,7 @@ def main():
         task_to_update = db.query(Task).filter(Task.id == new_task.id).first()
         if task_to_update:
             task_to_update.todo = "Updated Sample Task"
+            # task_to_update.company_id = 100 # 会社IDを更新してみる（これがエラーになるはず）
             db.commit()
             db.refresh(task_to_update)
             print(f"Updated Task ID: {task_to_update.id}, Todo: {task_to_update.todo}")
