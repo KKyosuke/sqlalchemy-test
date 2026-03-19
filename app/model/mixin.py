@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, event, inspect
+from sqlalchemy.orm import Session, with_loader_criteria
 
 session_company_id = 1  # これは例として固定値を使用しています。実際にはセッションから取得する必要があります。
 
@@ -9,6 +10,26 @@ class CompanyMixin:
         "version_id_col": company_id,
         "version_id_generator": False
     }
+
+@event.listens_for(Session, "do_orm_execute")
+def _add_filtering_criteria(execute_state):
+    """
+    Select時に自動的にcompany_idでフィルタリングを行うためのイベントリスナー。
+    CompanyMixinを継承しているモデルに対して、session_company_idによるWHERE句を追加します。
+    """
+    if (
+        execute_state.is_select
+        and not execute_state.is_column_load
+        and not execute_state.is_relationship_load
+    ):
+        execute_state.statement = execute_state.statement.options(
+            with_loader_criteria(
+                CompanyMixin,
+                lambda cls: cls.company_id == session_company_id,
+                include_aliases=True,
+                propagate_to_loaders=True,
+            )
+        )
 
 @event.listens_for(CompanyMixin, 'before_insert', propagate=True)
 def receive_before_insert(mapper, connection, target):
