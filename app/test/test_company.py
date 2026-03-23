@@ -30,7 +30,7 @@ def _validate_insert(parsed: exp.Insert, table_names: Set[str], company_id: str)
     # カラム名の取得
     schema = parsed.find(exp.Schema)
     if not schema:
-        # test_where_company.py の実装に合わせ、スキーマなし（カラム指定なし）はエラーとする
+        # スキーマなし（カラム指定なし）はエラーとする
         raise ValueError(f"Table '{table_name}' への INSERT にカラム指定がありません。")
 
     columns = [c.name.lower() for c in schema.find_all(exp.Identifier)]
