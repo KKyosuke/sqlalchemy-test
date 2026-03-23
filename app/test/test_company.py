@@ -75,7 +75,7 @@ def _validate_where_clause(parsed: exp.Expression, table_names: Set[str], compan
         t_name = table.name.lower()
         if t_name in table_names:
             alias = table.alias
-            table_aliases[alias if alias else t_name] = t_name
+            table_aliases[alias.lower() if alias else t_name] = t_name
 
     if not table_aliases:
         return
