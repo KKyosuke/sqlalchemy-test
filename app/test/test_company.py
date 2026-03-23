@@ -10,7 +10,7 @@ def validate_company_id(sql: str, table_names: List[str], company_id: str) -> No
     try:
         parsed = sqlglot.parse_one(sql)
     except Exception as e:
-        raise ValueError(f"SQLの解析に失敗しました: {e}")
+        raise ValueError(f"SQLの解析に失敗しました: {e}") from e
 
     normalized_tables = {t.lower() for t in table_names}
 
