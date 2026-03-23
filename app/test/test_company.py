@@ -65,7 +65,7 @@ def _validate_insert(parsed: exp.Insert, table_names: Set[str], company_id: str)
             
             _compare_value(target_projection, company_id, "SELECT句の company_id")
         else:
-             raise ValueError("SELECT 句のカラム数が INSERT のカラム数と一致しません。")
+            raise ValueError("SELECT 句のカラム数が INSERT のカラム数と一致しません。")
 
 def _validate_where_clause(parsed: exp.Expression, table_names: Set[str], company_id: str) -> None:
     """SELECT/UPDATE/DELETE文のWHERE句バリデーションロジック"""
